@@ -1,0 +1,4 @@
+ - GET acquirers response body does not include schemes definition in specs
+ - GET merchnats is missing, response body not decribed in specs
+ - GET merhcnat pagination query parameters are not  described
+ - GET merchnat details is not up to date factual response body different form specs

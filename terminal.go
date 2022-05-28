@@ -67,7 +67,7 @@ func (c *TerminalService) Create(ctx context.Context, mid string, data *Terminal
 }
 
 func (c *TerminalService) Update(ctx context.Context, ref string, data interface{}) (err error) {
-	path := "/terminals/%s"
+	path := "terminals/%s"
 	rel := &url.URL{Path: fmt.Sprintf(path, ref)}
 	if data == nil {
 		return errors.New("can't update on nil data")

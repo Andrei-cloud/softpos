@@ -141,15 +141,13 @@ func (c *Client) processRequest(ctx context.Context, method string, path url.URL
 	}
 	defer res.Body.Close()
 
-	resp := result
-	err = json.NewDecoder(res.Body).Decode(&resp)
-	if err != nil {
-		return err
-	}
-
 	switch res.StatusCode {
 	case http.StatusOK:
-		err = nil
+		resp := result
+		err = json.NewDecoder(res.Body).Decode(&resp)
+		if err != nil {
+			return err
+		}
 	case http.StatusBadRequest:
 		err = ErrIncorrect
 	case http.StatusUnauthorized:
@@ -158,6 +156,8 @@ func (c *Client) processRequest(ctx context.Context, method string, path url.URL
 		err = ErrNoPermission
 	case http.StatusConflict:
 		err = ErrConflict
+	case http.StatusNotFound:
+		err = ErrEntityNotFound
 	default:
 		err = ErrUnknown
 	}

@@ -66,6 +66,46 @@ func (c *TerminalService) Create(ctx context.Context, mid string, data *Terminal
 	return err
 }
 
+func (c *TerminalService) Update(ctx context.Context, ref string, data interface{}) (err error) {
+	path := "/terminals/%s"
+	rel := &url.URL{Path: fmt.Sprintf(path, ref)}
+	if data == nil {
+		return errors.New("can't update on nil data")
+	}
+
+	req, err := c.client.newRequestCtx(ctx, http.MethodPatch, *rel, data)
+	if err != nil {
+		return err
+	}
+
+	res, err := c.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode == http.StatusOK {
+		err = nil
+	} else {
+		switch res.StatusCode {
+		case http.StatusBadRequest:
+			err = fmt.Errorf("status terminal: %w", ErrIncorrect)
+		case http.StatusUnauthorized:
+			err = fmt.Errorf("status terminal: %w", ErrIvalidToken)
+		case http.StatusForbidden:
+			err = fmt.Errorf("status terminal: %w", ErrNoPermission)
+		case http.StatusNotFound:
+			err = fmt.Errorf("status terminal: %w", ErrEntityNotFound)
+		case http.StatusConflict:
+			err = fmt.Errorf("create merchant: %w", ErrConflict)
+		default:
+			err = fmt.Errorf("status terminal: %w", ErrUnknown)
+		}
+	}
+
+	return err
+}
+
 func (c *TerminalService) ChangeStatus(ctx context.Context, mid, tid string, state interface{}) (err error) {
 	path := "merchants/%s/terminals/%s/status"
 	rel := &url.URL{Path: fmt.Sprintf(path, mid, tid)}

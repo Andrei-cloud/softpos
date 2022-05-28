@@ -44,32 +44,32 @@ type MerchnatList struct {
 	} `json:"items"`
 }
 
-type Merchant struct {
-	CurrencyName       string    `json:"currencyName"`
-	AcquirerName       string    `json:"acquirerName"`
-	CountryName        string    `json:"countryName"`
-	CountryNativeName  string    `json:"countryNativeName"`
-	Mcc                int       `json:"mcc"`
-	State              string    `json:"state"`
-	Reference          string    `json:"reference"`
-	MerchantID         string    `json:"merchantId"`
-	IsLocationRequired bool      `json:"isLocationRequired"`
-	Name               string    `json:"name"`
-	TaxRefNumber       string    `json:"taxRefNumber"`
-	Country            int       `json:"country"`
-	City               string    `json:"city"`
-	Region             string    `json:"region"`
-	Address            string    `json:"address"`
-	PostalCode         string    `json:"postalCode"`
-	Phone              string    `json:"phone"`
-	Email              string    `json:"email"`
-	Created            time.Time `json:"created"`
-	Updated            time.Time `json:"updated"`
-	Acquirer           string    `json:"acquirer"`
-	Currency           int       `json:"currency"`
-	Language           string    `json:"language"`
-	Profile            string    `json:"profile"`
-	Flags              string    `json:"flags"`
+type MerchantDetails struct {
+	CurrencyName       string `json:"currencyName,omitempty"`
+	AcquirerName       string `json:"acquirerName,omitempty"`
+	CountryName        string `json:"countryName,omitempty"`
+	CountryNativeName  string `json:"countryNativeName,omitempty"`
+	Mcc                int    `json:"mcc,omitempty"`
+	State              string `json:"state,omitempty"`
+	Reference          string `json:"reference,omitempty"`
+	MerchantID         string `json:"merchantId,omitempty"`
+	IsLocationRequired bool   `json:"isLocationRequired,omitempty"`
+	Name               string `json:"name,omitempty"`
+	TaxRefNumber       string `json:"taxRefNumber,omitempty"`
+	Country            int    `json:"country,omitempty"`
+	City               string `json:"city,omitempty"`
+	Region             string `json:"region,omitempty"`
+	Address            string `json:"address,omitempty"`
+	PostalCode         string `json:"postalCode,omitempty"`
+	Phone              string `json:"phone,omitempty"`
+	Email              string `json:"email,omitempty"`
+	Created            string `json:"created,omitempty"`
+	Updated            string `json:"updated,omitempty"`
+	Acquirer           string `json:"acquirer,omitempty"`
+	Currency           int    `json:"currency,omitempty"`
+	Language           string `json:"language,omitempty"`
+	Profile            string `json:"profile,omitempty"`
+	Flags              string `json:"flags,omitempty"`
 }
 
 func (c *MerchantService) GetList(ctx context.Context, v interface{}) (err error) {
@@ -84,7 +84,7 @@ func (c *MerchantService) GetDetails(ctx context.Context, mid string, v interfac
 	return c.client.processRequest(ctx, http.MethodGet, url, nil, v)
 }
 
-func (c *MerchantService) Create(ctx context.Context, data *Merchant, v interface{}) (err error) {
+func (c *MerchantService) Create(ctx context.Context, data *MerchantDetails, v interface{}) (err error) {
 	path := "merchants"
 	rel := &url.URL{Path: path}
 	if data == nil {
@@ -120,6 +120,46 @@ func (c *MerchantService) Create(ctx context.Context, data *Merchant, v interfac
 			err = fmt.Errorf("create merchant: %w", ErrConflict)
 		default:
 			err = fmt.Errorf("create merchant: %w", ErrUnknown)
+		}
+	}
+
+	return err
+}
+
+func (c *MerchantService) Update(ctx context.Context, ref string, data interface{}) (err error) {
+	path := "merchants/%s"
+	rel := &url.URL{Path: fmt.Sprintf(path, ref)}
+	if data == nil {
+		return errors.New("can't update status on nil data")
+	}
+
+	req, err := c.client.newRequestCtx(ctx, http.MethodPatch, *rel, data)
+	if err != nil {
+		return err
+	}
+
+	res, err := c.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode == http.StatusOK {
+		err = nil
+	} else {
+		switch res.StatusCode {
+		case http.StatusBadRequest:
+			err = fmt.Errorf("status merchant: %w", ErrAcqNotExist)
+		case http.StatusUnauthorized:
+			err = fmt.Errorf("status merchant: %w", ErrIvalidToken)
+		case http.StatusForbidden:
+			err = fmt.Errorf("status merchant: %w", ErrNoPermission)
+		case http.StatusNotFound:
+			err = fmt.Errorf("status merchant: %w", ErrEntityNotFound)
+		case http.StatusConflict:
+			err = fmt.Errorf("create merchant: %w", ErrConflict)
+		default:
+			err = fmt.Errorf("status merchant: %w", ErrUnknown)
 		}
 	}
 

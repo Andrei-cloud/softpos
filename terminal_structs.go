@@ -74,11 +74,11 @@ type TemrinalDetails struct {
 }
 
 type Preferences struct {
-	Tag           string `json:"tag"`
-	Value         bool   `json:"value"`
-	Description   string `json:"description"`
-	PaymentSystem string `json:"paymentSystem"`
-	Type          string `json:"type"`
+	Tag           string      `json:"tag"`
+	Value         interface{} `json:"value"`
+	Description   string      `json:"description"`
+	PaymentSystem string      `json:"paymentSystem"`
+	Type          string      `json:"type"`
 }
 type Keys struct {
 	KeyType       string `json:"keyType"`

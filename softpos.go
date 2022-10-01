@@ -84,25 +84,7 @@ func (c *Client) NewRequest(method string, path url.URL, body interface{}) (*htt
 	return c.newRequestCtx(context.Background(), method, path, body)
 }
 
-// func (c *Client) newMultiPartRequestCtx(ctx context.Context, method string, path url.URL, body interface{}) (*http.Request, error) {
-// 	//rel := &url.URL{Path: path}
-// 	u := c.BaseURL.ResolveReference(&path)
-// 	req, err := http.NewRequestWithContext(ctx, method, u.String(), body.(io.Reader))
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	req.Header.Add("Accept", "application/json; charset=utf-8")
-// 	req.Header.Add("Authorization", c.apiKey)
-
-// 	if c.UserAgent != "" {
-// 		req.Header.Set("User-Agent", c.UserAgent)
-// 	}
-// 	return req, nil
-// }
-
 func (c *Client) newRequestCtx(ctx context.Context, method string, path url.URL, body interface{}) (*http.Request, error) {
-	//rel := &url.URL{Path: path}
 	u := c.BaseURL.ResolveReference(&path)
 	var buf io.ReadWriter
 	if body != nil {
@@ -141,15 +123,13 @@ func (c *Client) processRequest(ctx context.Context, method string, path url.URL
 	}
 	defer res.Body.Close()
 
-	resp := result
-	err = json.NewDecoder(res.Body).Decode(&resp)
-	if err != nil {
-		return err
-	}
-
 	switch res.StatusCode {
 	case http.StatusOK:
-		err = nil
+		resp := result
+		err = json.NewDecoder(res.Body).Decode(&resp)
+		if err != nil {
+			return err
+		}
 	case http.StatusBadRequest:
 		err = ErrIncorrect
 	case http.StatusUnauthorized:
@@ -158,6 +138,8 @@ func (c *Client) processRequest(ctx context.Context, method string, path url.URL
 		err = ErrNoPermission
 	case http.StatusConflict:
 		err = ErrConflict
+	case http.StatusNotFound:
+		err = ErrEntityNotFound
 	default:
 		err = ErrUnknown
 	}

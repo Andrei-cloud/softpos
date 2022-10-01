@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"reflect"
 	"regexp"
+	"strings"
 	"testing"
 )
 
@@ -54,7 +55,7 @@ func TestMerchnatGetDetailsMock(t *testing.T) {
 		fmt.Fprintf(w, `{"state":"Active","reference":"32c24e1d-3346-4c5e-a15a-54ffe4e54712","merchantId":"%s","isLocationRequired":false,"name":"MERCHANT UAT","taxRefNumber":"6453746","country":634,"city":"DOHA","region":"DOHA","address":"wastbay ","postalCode":"50000","phone":"+97466667777","email":"merchnat@example.com","created":"2022-02-20T11:58:14.483339Z","updated":"2022-02-20T11:58:14.483339Z","acquirer":"cbq","currency":634,"mcc":5910,"language":"en","profile":"default","flags":"None"}`, want)
 	})
 
-	merchnat := Merchant{}
+	merchnat := MerchantDetails{}
 	err := c.MerchantService.GetDetails(context.Background(), want, &merchnat)
 	if err != nil {
 		t.Errorf("Error occured = %v", err)
@@ -72,7 +73,7 @@ func TestMerchnatCreateMock(t *testing.T) {
 
 	c.client.Transport = LoggingRoundTripper{http.DefaultTransport}
 
-	merchnat := Merchant{
+	merchnat := MerchantDetails{
 		State:              "Active",
 		MerchantID:         "750074750",
 		IsLocationRequired: false,
@@ -95,7 +96,7 @@ func TestMerchnatCreateMock(t *testing.T) {
 	want := "3ddf6776-b872-4053-8391-a6c3db5fb008"
 	mux.HandleFunc("/merchants", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, http.MethodPost)
-		m := Merchant{}
+		m := MerchantDetails{}
 		if err := json.NewDecoder(r.Body).Decode(&m); err != nil {
 			t.Errorf("Error occured = %v", err)
 		}
@@ -114,6 +115,46 @@ func TestMerchnatCreateMock(t *testing.T) {
 
 	if ref.Reference != want {
 		t.Errorf("want %v got = %v", want, ref.Reference)
+	}
+}
+
+func TestMerchnatCreateConflictMock(t *testing.T) {
+	c, mux, _, teardown := setup()
+	defer teardown()
+
+	c.client.Transport = LoggingRoundTripper{http.DefaultTransport}
+
+	merchnat := MerchantDetails{
+		State:              "Active",
+		MerchantID:         "750074750",
+		IsLocationRequired: false,
+		Name:               "Merchant Test",
+		TaxRefNumber:       "X505",
+		Country:            634,
+		City:               "Doha",
+		Region:             "Middle east",
+		Address:            "west bay, doha",
+		PostalCode:         "12300",
+		Phone:              "+97465743782",
+		Email:              "zak.exemple@cbq.qa",
+		Acquirer:           "cbq",
+		Currency:           634,
+		Mcc:                5812,
+		Language:           "en",
+		Profile:            "default",
+	}
+
+	want := "3ddf6776-b872-4053-8391-a6c3db5fb008"
+	mux.HandleFunc("/merchants", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, http.MethodPost)
+		w.WriteHeader(http.StatusConflict)
+		fmt.Fprintf(w, `{"reason":"%s", "field":"MID", "value": "%s" }`, want, merchnat.MerchantID)
+	})
+
+	ref := CreateResponse{}
+	err := c.MerchantService.Create(context.Background(), &merchnat, &ref)
+	if !strings.Contains(err.Error(), want) {
+		t.Errorf("Error occured = %v", err)
 	}
 }
 

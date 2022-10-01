@@ -117,7 +117,13 @@ func (c *MerchantService) Create(ctx context.Context, data *MerchantDetails, v i
 		case http.StatusForbidden:
 			err = fmt.Errorf("create merchant: %w", ErrNoPermission)
 		case http.StatusConflict:
-			err = fmt.Errorf("create merchant: %w", ErrConflict)
+			reason := &conflict{}
+			err = json.NewDecoder(res.Body).Decode(reason)
+			if err != nil {
+				return err
+			}
+			apierr := fmt.Sprintf("%s:%s:%s:%d", reason.Reason, reason.Field, reason.Value, reason.Type)
+			err = fmt.Errorf("create merchant: %w", fmt.Errorf(apierr+"- %w", ErrConflict))
 		default:
 			err = fmt.Errorf("create merchant: %w", ErrUnknown)
 		}

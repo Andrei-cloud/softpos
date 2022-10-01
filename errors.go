@@ -10,6 +10,6 @@ var (
 	ErrAcqNotExist    error = errors.New("acquirer does not exists or incorrect properties")
 	ErrIvalidToken    error = errors.New("authentication token validation error")
 	ErrNoPermission   error = errors.New("do not have permission")
-	ErrConflict       error = errors.New("entity with same phone, email, mid, tid exists")
+	ErrConflict       error = errors.New("conflict")
 	ErrUnknown        error = errors.New("unknown error")
 )

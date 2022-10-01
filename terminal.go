@@ -55,7 +55,13 @@ func (c *TerminalService) Create(ctx context.Context, mid string, data *Terminal
 		case http.StatusForbidden:
 			err = fmt.Errorf("create terminal: %w", ErrNoPermission)
 		case http.StatusConflict:
-			err = fmt.Errorf("create terminal: %w", ErrConflict)
+			reason := &conflict{}
+			err = json.NewDecoder(res.Body).Decode(reason)
+			if err != nil {
+				return err
+			}
+			apierr := fmt.Sprintf("%s:%s:%s:%d", reason.Reason, reason.Field, reason.Value, reason.Type)
+			err = fmt.Errorf("create terminal: %w", fmt.Errorf(apierr+"- %w", ErrConflict))
 		case http.StatusNotFound:
 			err = fmt.Errorf("create terminal: %w", ErrEntityNotFound)
 		default:

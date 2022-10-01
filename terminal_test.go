@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"reflect"
 	"regexp"
+	"strings"
 	"testing"
 )
 
@@ -110,6 +111,40 @@ func TestTerminalCreateMock(t *testing.T) {
 
 	if ref.Reference != want {
 		t.Errorf("want %v got = %v", want, ref.Reference)
+	}
+}
+
+func TestTerminalCreateConflictMock(t *testing.T) {
+	c, mux, _, teardown := setup()
+	defer teardown()
+
+	c.client.Transport = LoggingRoundTripper{http.DefaultTransport}
+
+	terminal := Terminal{
+		TerminalID: "66770050",
+		Currency:   634,
+		Phone:      "+97453627564",
+		Email:      "zak.example@cbq.qa",
+		Profile:    "default",
+		Name:       "zak termname",
+		Mcc:        5812,
+		State:      "Active",
+		Note:       "",
+		Language:   "en",
+	}
+
+	mid := "600086900"
+	want := "Conflict on MID"
+	mux.HandleFunc(fmt.Sprintf("/merchants/%s/terminals", mid), func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, http.MethodPost)
+		w.WriteHeader(http.StatusConflict)
+		fmt.Fprintf(w, `{"reason":"%s", "field":"MID", "value": "%s" }`, want, mid)
+	})
+
+	ref := CreateResponse{}
+	err := c.TerminalService.Create(context.Background(), mid, &terminal, &ref)
+	if !strings.Contains(err.Error(), want) {
+		t.Errorf("Error occured = %v", err)
 	}
 }
 

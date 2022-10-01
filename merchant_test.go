@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"reflect"
 	"regexp"
+	"strings"
 	"testing"
 )
 
@@ -114,6 +115,46 @@ func TestMerchnatCreateMock(t *testing.T) {
 
 	if ref.Reference != want {
 		t.Errorf("want %v got = %v", want, ref.Reference)
+	}
+}
+
+func TestMerchnatCreateConflictMock(t *testing.T) {
+	c, mux, _, teardown := setup()
+	defer teardown()
+
+	c.client.Transport = LoggingRoundTripper{http.DefaultTransport}
+
+	merchnat := MerchantDetails{
+		State:              "Active",
+		MerchantID:         "750074750",
+		IsLocationRequired: false,
+		Name:               "Merchant Test",
+		TaxRefNumber:       "X505",
+		Country:            634,
+		City:               "Doha",
+		Region:             "Middle east",
+		Address:            "west bay, doha",
+		PostalCode:         "12300",
+		Phone:              "+97465743782",
+		Email:              "zak.exemple@cbq.qa",
+		Acquirer:           "cbq",
+		Currency:           634,
+		Mcc:                5812,
+		Language:           "en",
+		Profile:            "default",
+	}
+
+	want := "3ddf6776-b872-4053-8391-a6c3db5fb008"
+	mux.HandleFunc("/merchants", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, http.MethodPost)
+		w.WriteHeader(http.StatusConflict)
+		fmt.Fprintf(w, `{"reason":"%s", "field":"MID", "value": "%s" }`, want, merchnat.MerchantID)
+	})
+
+	ref := CreateResponse{}
+	err := c.MerchantService.Create(context.Background(), &merchnat, &ref)
+	if !strings.Contains(err.Error(), want) {
+		t.Errorf("Error occured = %v", err)
 	}
 }
 

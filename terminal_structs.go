@@ -3,17 +3,17 @@ package softpos
 import "time"
 
 type Terminal struct {
-	TerminalID  string `json:"terminalId"`
+	TerminalID  string `json:"terminalId,omitempty"`
 	MerchantRef string `json:"merchantRef,omitempty"`
-	Currency    int    `json:"currency"`
-	Phone       string `json:"phone"`
-	Email       string `json:"email"`
-	Profile     string `json:"profile"`
-	Name        string `json:"name"`
-	Mcc         int    `json:"mcc"`
-	State       string `json:"state"`
+	Currency    int    `json:"currency,omitempty"`
+	Phone       string `json:"phone,omitempty"`
+	Email       string `json:"email,omitempty"`
+	Profile     string `json:"profile,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Mcc         int    `json:"mcc,omitempty"`
+	State       string `json:"state,omitempty"`
 	Note        string `json:"note,omitempty"`
-	Language    string `json:"language"`
+	Language    string `json:"language,omitempty"`
 }
 
 type TemrinalDetails struct {

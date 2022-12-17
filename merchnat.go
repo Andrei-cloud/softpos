@@ -49,7 +49,7 @@ type MerchantDetails struct {
 	AcquirerName       string `json:"acquirerName,omitempty"`
 	CountryName        string `json:"countryName,omitempty"`
 	CountryNativeName  string `json:"countryNativeName,omitempty"`
-	Mcc                int    `json:"mcc,omitempty"`
+	Mcc                string `json:"mcc,omitempty"`
 	State              string `json:"state,omitempty"`
 	Reference          string `json:"reference,omitempty"`
 	MerchantID         string `json:"merchantId,omitempty"`

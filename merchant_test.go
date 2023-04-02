@@ -88,7 +88,7 @@ func TestMerchnatCreateMock(t *testing.T) {
 		Email:              "zak.exemple@cbq.qa",
 		Acquirer:           "cbq",
 		Currency:           634,
-		Mcc:                5812,
+		Mcc:                "5812",
 		Language:           "en",
 		Profile:            "default",
 	}
@@ -139,7 +139,7 @@ func TestMerchnatCreateConflictMock(t *testing.T) {
 		Email:              "zak.exemple@cbq.qa",
 		Acquirer:           "cbq",
 		Currency:           634,
-		Mcc:                5812,
+		Mcc:                "5812",
 		Language:           "en",
 		Profile:            "default",
 	}

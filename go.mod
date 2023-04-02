@@ -1,4 +1,4 @@
-module softposapi
+module github.com/andrei-cloud/softpos
 
 go 1.17
 
